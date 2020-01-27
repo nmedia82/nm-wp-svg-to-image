@@ -72,12 +72,19 @@ class NM_SVG_Service {
         $svg = SVG::fromFile($file);
         // circle.text
         // $text = $svg->getDocument()->getChild(1)->getChild(0)->getChild(0);
-        $text = $svg->getDocument()->getChild(1)->getChild(1);
+        // $text = $svg->getDocument()->getChild(1)->getChild(1);
         // $image->setAttribute('xlink:href', NMSVG_URL.'/assets/Mug-PNG-Image.png');
         // $text = $svg->getDocument()->getChild(2)->getChild(0);
         // nmsvgphp_pa($text);
-        // pa($text);
-        $text->setValue($text_value);
+        $class = 'dillard-class';
+        $doc = $svg->getDocument();
+        $node = $doc->getElementsByClassName($class);
+        if($node > 0) {
+            // $nodeFound = $node->getChild(0);
+            $node[0]->setValue($text_value);
+        }
+        // nmsvgphp_pa($text);
+        // $this->findNode($id, $svg->getDocument());
         
         $output_svg = NMSVG_PATH.'/output/svg-ready.svg';
         file_put_contents($output_svg, $svg->toXMLString());
@@ -90,6 +97,23 @@ class NM_SVG_Service {
         // echo $rasterImage;
         
         exit;
+    }
+    
+    
+    function findNode($id, $document) {
+        
+        $childCount = $document->countChildren();
+        $id_found = $document->getAttribute("id", $id);
+        echo "ID found {$id_found}<br>";
+        $node = 0;
+        while ($node < $childCount) {
+            
+            $child = $document->getChild($node);
+            $id = $document->getAttribute('id');
+            $this->findNode($id, $child);
+            $node++;
+        }
+        
     }
 }
 
