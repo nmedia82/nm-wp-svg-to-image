@@ -43,7 +43,13 @@ class NM_SVG_Service {
 	
 	function generate_image_from_svg() {
 	    
-	    $this->circleText();
+	    $text_value     = isset($_GET['text_value']) ? $_GET['text_value'] : '';
+        $class_value    = isset($_GET['class_value']) ? $_GET['class_value'] : '';
+        $template_name  = isset($_GET['template_name']) ? $_GET['template_name'] : '';
+        
+        if( ! $template_name ) wp_send_json_error(__("Template name not defined", "nm-svgtoimage" ));
+        
+        $this->renderSVG($text_value, $class_value, $template_name);
 	}
 	
 	function render_image($attr) {
@@ -61,11 +67,35 @@ class NM_SVG_Service {
 		ob_end_clean();
 		return $html;
 	}
+	
+	function renderSVG($text_value, $class_value, $template_name) {
+	    
+	    $svg_file = NMSVG_PATH."/assets/{$template_name}";
+        if( ! file_exists($svg_file) ) wp_send_json_error(__("{$svg_file} Not Found", "nm-svgtoimage" ));
+        
+        $svg = SVG::fromFile($svg_file);
+        
+        $doc = $svg->getDocument();
+        $nodes = $doc->getElementsByClassName($class_value);
+        if( $nodes ) {
+            
+            foreach($nodes as $node){
+                
+                $node->setValue($text_value);
+            }
+        }
+        
+        $output_svg = NMSVG_PATH."/output/{$template_name}";
+        file_put_contents($output_svg, $svg->toXMLString());
+        
+        header('Content-Type: image/svg');
+        echo NMSVG_URL."/output/{$template_name}?nocache=".time();
+        exit;
+	}
     
     function circleText(){
     
         // $file = NMSVG_PATH.'/assets/circle.text.svg';
-        $file = NMSVG_PATH.'/assets/dillard.svg';
         $font = isset($_GET['font']) ? $_GET['font'] : 'openGost';
         $font = new \SVG\Nodes\Structures\SVGFont($font, 'OpenGostTypeA-Regular.ttf');
         $text_value = isset($_GET['text_value']) ? $_GET['text_value'] : 'Hello World';
@@ -99,22 +129,6 @@ class NM_SVG_Service {
         exit;
     }
     
-    
-    function findNode($id, $document) {
-        
-        $childCount = $document->countChildren();
-        $id_found = $document->getAttribute("id", $id);
-        echo "ID found {$id_found}<br>";
-        $node = 0;
-        while ($node < $childCount) {
-            
-            $child = $document->getChild($node);
-            $id = $document->getAttribute('id');
-            $this->findNode($id, $child);
-            $node++;
-        }
-        
-    }
 }
 
 $SVG = new NM_SVG_Service();
