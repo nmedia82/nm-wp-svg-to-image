@@ -13,11 +13,11 @@
        $.ajax({
           type: "GET",
           url:endpoint,
-          contentType: "image/svg",
+        //   contentType: "image/svg",
           data: data,
           success: function(resp){
               console.log(resp);
-          $('#nmsvgphp_img').html('<img src="' + resp + '" />'); },
+          $('#nmsvgphp_img').html('<img src="' + resp.output_svg + '" />'); },
         } );
  
     });

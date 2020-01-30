@@ -43,13 +43,17 @@ class NM_SVG_Service {
 	
 	function generate_image_from_svg() {
 	    
+	    
+        $all_meta  = isset($_GET['meta']) ? $_GET['meta'] : '';
+        
+	    
 	    $text_value     = isset($_GET['text_value']) ? $_GET['text_value'] : '';
         $class_value    = isset($_GET['class_value']) ? $_GET['class_value'] : '';
         $template_name  = isset($_GET['template_name']) ? $_GET['template_name'] : '';
         
         if( ! $template_name ) wp_send_json_error(__("Template name not defined", "nm-svgtoimage" ));
         
-        $this->renderSVG($text_value, $class_value, $template_name);
+        $this->renderSVG($text_value, $class_value, $template_name, $all_meta);
 	}
 	
 	function render_image($attr) {
@@ -68,7 +72,8 @@ class NM_SVG_Service {
 		return $html;
 	}
 	
-	function renderSVG($text_value, $class_value, $template_name) {
+	function renderSVG($text_value, $class_value, $template_name, $all_meta = array() ) {
+	    
 	    
 	    $svg_file = NMSVG_PATH."/assets/{$template_name}";
         if( ! file_exists($svg_file) ) wp_send_json_error(__("{$svg_file} Not Found", "nm-svgtoimage" ));
@@ -76,21 +81,26 @@ class NM_SVG_Service {
         $svg = SVG::fromFile($svg_file);
         
         $doc = $svg->getDocument();
-        $nodes = $doc->getElementsByClassName($class_value);
-        if( $nodes ) {
+        
+        foreach ($all_meta as $key => $val) {
             
-            foreach($nodes as $node){
-                
-                $node->setValue($text_value);
+            $nodes = $doc->getElementsByClassName($key);
+            
+            if( $nodes ) {
+                foreach($nodes as $node){
+                    $node->setValue($val);
+                }
             }
         }
         
-        $output_svg = NMSVG_PATH."/output/{$template_name}";
+        $filename = time().'-'.$template_name;
+        $output_svg = NMSVG_PATH."/output/{$filename}";
         file_put_contents($output_svg, $svg->toXMLString());
         
-        header('Content-Type: image/svg');
-        echo NMSVG_URL."/output/{$template_name}?nocache=".time();
-        exit;
+        // header('Content-Type: image/svg');
+        $output_url = NMSVG_URL."/output/{$filename}";
+        $response = array('output_svg'=>$output_url, 'filename'=>$filename);
+        wp_send_json($response);
 	}
     
     function circleText(){
