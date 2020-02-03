@@ -18,7 +18,7 @@
           success: function(resp){
               console.log(resp);
           $('#nmsvgphp_img').html('<img src="' + resp.output_svg + '" />'); },
-        } );
+        });
  
     });
 }(jQuery));
