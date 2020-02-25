@@ -89,7 +89,7 @@ class NM_SVG_Service {
             
             if( $nodes ) {
                 foreach($nodes as $node){
-                    $node->setValue($val);
+                    $node->setValue(stripcslashes($val));
                 }
             }
         }
