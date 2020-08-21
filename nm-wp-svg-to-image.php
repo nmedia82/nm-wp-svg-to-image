@@ -51,10 +51,12 @@ class NM_SVG_Service {
 	    $text_value     = isset($_GET['text_value']) ? $_GET['text_value'] : '';
         $class_value    = isset($_GET['class_value']) ? $_GET['class_value'] : '';
         $template_name  = isset($_GET['template_name']) ? $_GET['template_name'] : '';
+
+        $img_template  = isset($_GET['img_template']) ? $_GET['img_template'] : '';
         
         if( ! $template_name ) wp_send_json_error(__("Template name not defined", "nm-svgtoimage" ));
         
-        $this->renderSVG($text_value, $class_value, $template_name, $all_meta);
+        $this->renderSVG($text_value, $class_value, $template_name, $all_meta, $img_template);
 	}
 	
 	function render_image($attr) {
@@ -73,8 +75,13 @@ class NM_SVG_Service {
 		return $html;
 	}
 	
-	function renderSVG($text_value, $class_value, $template_name, $all_meta = array() ) {
+	function renderSVG($text_value, $class_value, $template_name, $all_meta = array(), $img_template ) {
 	    
+        if ($img_template != '') {
+            $template_name = $img_template.'.svg';
+        }
+
+        // var_dump($template_name);
 	    
 	    $svg_file = NMSVG_PATH."/assets/{$template_name}";
         if( ! file_exists($svg_file) ) wp_send_json_error(__("{$svg_file} Not Found", "nm-svgtoimage" ));
